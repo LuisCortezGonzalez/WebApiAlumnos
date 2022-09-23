@@ -1,20 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApiAlumnos.BD;
+using WebApiPeliculas.BD;
 
 namespace WebApiAlumnos.Controllers
 {
     [ApiController]
-    [Route("api/alumnos")]
+    [Route("api/pelicula")]
     public class PrimerController : ControllerBase
     {
         [HttpGet]
 
-        public ActionResult<List<Alumno>> Get()
+        public ActionResult<List<Pelicula>> Get()
         {
-            return new List<Alumno>()
+            return new List<Pelicula>()
             {
-                new Alumno() {Id = 1,Nombre = "Luis" },
-                new Alumno() {Id = 2,Nombre = "Yoriichi"}
+                new Pelicula() {Id = 1,Nombre = "Spider-Man" },
+                new Pelicula() {Id = 2,Nombre = "Iron Man"}
                 
             };
         }

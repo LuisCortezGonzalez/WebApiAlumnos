@@ -1,4 +1,4 @@
-﻿namespace WebApiAlumnos
+﻿namespace WebApiPeliculas
 {
     public class Startup
     {

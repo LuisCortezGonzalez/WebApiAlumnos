@@ -1,4 +1,4 @@
-using WebApiAlumnos;
+using WebApiPeliculas;
 
 var builder = WebApplication.CreateBuilder(args);
 

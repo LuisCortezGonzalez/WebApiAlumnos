@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebApiAlumnos.BD;
+using WebApiPeliculas.BD;
 
-namespace WebApiAlumnos
+namespace WebApiPeliculas
 {
     public class AplicationDbContext : DbContext
     {
@@ -10,6 +10,6 @@ namespace WebApiAlumnos
 
         }
 
-        public DbSet<Alumno> Alumnos { get; set; }
+        public DbSet<Pelicula> Alumnos { get; set; }
     }
 }

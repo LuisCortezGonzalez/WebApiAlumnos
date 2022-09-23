@@ -1,6 +1,6 @@
-﻿namespace WebApiAlumnos.BD
+﻿namespace WebApiPeliculas.BD
 {
-    public class Alumno
+    public class Pelicula
     {
         public int Id { get; set; }
 
