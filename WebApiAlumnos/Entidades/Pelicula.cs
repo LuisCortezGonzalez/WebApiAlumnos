@@ -1,4 +1,4 @@
-﻿namespace WebApiPeliculas.BD
+﻿namespace WebApiPeliculas.Entidades
 {
     public class Pelicula
     {

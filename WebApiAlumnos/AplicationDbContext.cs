@@ -1,15 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebApiPeliculas.BD;
+using WebApiPeliculas.Entidades;
 
 namespace WebApiPeliculas
 {
-    public class AplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext
     {
-        public AplicationDbContext(DbContextOptions options) : base(options)
+        public ApplicationDbContext(DbContextOptions options) : base(options)
         {
 
         }
 
-        public DbSet<Pelicula> Alumnos { get; set; }
+        public DbSet<Pelicula> Peliculas { get; set; }
     }
 }
