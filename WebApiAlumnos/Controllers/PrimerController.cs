@@ -5,7 +5,7 @@ using WebApiPeliculas.Entidades;
 namespace WebApiPeliculas.Controllers
 {
     [ApiController]
-    [Route("api/pelicula")]
+    [Route("api/pelicula")]  //ruta del controlador
     public class PrimerController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
@@ -19,7 +19,7 @@ namespace WebApiPeliculas.Controllers
 
         public async Task<ActionResult<List<Pelicula>>> Get()
         {
-            return await dbContext.Peliculas.ToListAsync();
+            return await dbContext.Peliculas.Include(x => x.descripciones).ToListAsync();
         }
 
         [HttpPost]

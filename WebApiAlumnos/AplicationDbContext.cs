@@ -11,5 +11,7 @@ namespace WebApiPeliculas
         }
 
         public DbSet<Pelicula> Peliculas { get; set; }
+
+        public DbSet<Descripcion>descripciones { get; set; }
     }
 }
