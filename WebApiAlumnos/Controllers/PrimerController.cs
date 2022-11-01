@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiPeliculas.Entidades;
+using WebApiPeliculas.Filtros;
+using WebApiPeliculas.Services;
 
 namespace WebApiPeliculas.Controllers
 {
@@ -9,22 +12,102 @@ namespace WebApiPeliculas.Controllers
     public class PrimerController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
+        private readonly IService service;
+        private readonly ServiceTransient serviceTransient;
+        private readonly ServiceScoped serviceScoped;
+        private readonly ServiceSingleton serviceSingleton;
+        private readonly ILogger<PrimerController> logger;
+        private readonly IWebHostEnvironment env;
 
-        public PrimerController(ApplicationDbContext dbContext)
+        public PrimerController(ApplicationDbContext dbContext, IService service,
+            ServiceTransient serviceTransient, ServiceScoped serviceScoped,
+            ServiceSingleton serviceSingleton, ILogger<PrimerController> logger,
+            IWebHostEnvironment env)
         {
             this.dbContext = dbContext;
+            this.service = service;
+            this.serviceTransient = serviceTransient;
+            this.serviceScoped = serviceScoped;
+            this.serviceSingleton = serviceSingleton;
+            this.logger = logger;
+            this.env = env;
         }
 
-        [HttpGet]
+        [HttpGet("GUID")]
+        [ResponseCache(Duration = 10)]
+        [ServiceFilter(typeof(FiltroDeAccion))]
+        public ActionResult ObtenerGuid()
+        {
+            throw new NotImplementedException();
+            logger.LogInformation("Durante la ejecucion");
+            return Ok(new
+            {
+                AlumnosControllerTransient = serviceTransient.guid,
+                ServiceA_Transient = service.GetTransient(),
+                AlumnosControllerScoped = serviceScoped.guid,
+                ServiceA_Scoped = service.GetScoped(),
+                AlumnosControllerSingleton = serviceSingleton.guid,
+                ServiceA_Singleton = service.GetSingleton()
+            });
+        }
+
+        [HttpGet] // api/pelicula
+        [HttpGet("listado")] // api/pelicula/listado
+        [HttpGet("/listado")] // /listado
 
         public async Task<ActionResult<List<Pelicula>>> Get()
         {
+            throw new NotImplementedException();
+            logger.LogInformation("Se obtiene el listado de alumnos");
+            logger.LogWarning("Mensaje de prueba warning");
+            service.EjecutarJob();
             return await dbContext.Peliculas.Include(x => x.descripciones).ToListAsync();
+        }
+
+        [HttpGet("primero")] //api/peliculas/primero
+
+        public async Task<ActionResult<Pelicula>> PrimeraPelicula()
+        {
+            return await dbContext.Peliculas.FirstOrDefaultAsync();
+        }
+
+        [HttpGet("{id}")]
+
+        public async Task<ActionResult<Pelicula>> Get(int id)
+        {
+            var pelicula =  await dbContext.Peliculas.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (pelicula == null)
+            {
+                return NotFound();
+            }
+
+            return pelicula;
+        }
+
+        [HttpGet("{nombre}")]
+
+        public async Task<ActionResult<Pelicula>> Get(string nombre)
+        {
+            var pelicula = await dbContext.Peliculas.FirstOrDefaultAsync(x => x.Nombre.Contains(nombre));
+
+            if (pelicula == null)
+            {
+                return NotFound();
+            }
+
+            return pelicula;
         }
 
         [HttpPost]
         public async Task<ActionResult> Post(Pelicula pelicula)
         {
+            var existeAlumnoMismoNombre = await dbContext.Peliculas.AnyAsync(x => x.Nombre == pelicula.Nombre);
+
+            if (existeAlumnoMismoNombre)
+            {
+                return BadRequest("Ya existe una pelicula con ese nombre");
+            }
             dbContext.Add(pelicula);
             await dbContext.SaveChangesAsync();
             return Ok();
