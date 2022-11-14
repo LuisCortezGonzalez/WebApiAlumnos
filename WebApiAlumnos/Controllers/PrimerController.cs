@@ -51,26 +51,6 @@ namespace WebApiPeliculas.Controllers
             });
         }
 
-        [HttpGet] // api/pelicula
-        [HttpGet("listado")] // api/pelicula/listado
-        [HttpGet("/listado")] // /listado
-
-        public async Task<ActionResult<List<Pelicula>>> Get()
-        {
-            throw new NotImplementedException();
-            logger.LogInformation("Se obtiene el listado de alumnos");
-            logger.LogWarning("Mensaje de prueba warning");
-            service.EjecutarJob();
-            return await dbContext.Peliculas.Include(x => x.descripciones).ToListAsync();
-        }
-
-        [HttpGet("primero")] //api/peliculas/primero
-
-        public async Task<ActionResult<Pelicula>> PrimeraPelicula()
-        {
-            return await dbContext.Peliculas.FirstOrDefaultAsync();
-        }
-
         [HttpGet("{id}")]
 
         public async Task<ActionResult<Pelicula>> Get(int id)
