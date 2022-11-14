@@ -9,7 +9,7 @@ namespace WebApiPeliculas.Services
         private readonly IWebHostEnvironment env;
 
         private readonly string nombreArchivo = "Grupo037.txt";
-        // private readonly string archivo = "ListadoAlumnos.txt";
+        
         private Timer timer;
 
         public EscribirEnArchivo(IWebHostEnvironment env)

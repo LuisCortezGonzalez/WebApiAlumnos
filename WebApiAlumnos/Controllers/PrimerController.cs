@@ -1,14 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiPeliculas.Entidades;
 using WebApiPeliculas.Filtros;
 using WebApiPeliculas.Services;
+using WebApiPeliculas.DTOs;
 
 namespace WebApiPeliculas.Controllers
 {
     [ApiController]
     [Route("api/pelicula")]  //ruta del controlador
+
     public class PrimerController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
@@ -18,6 +21,7 @@ namespace WebApiPeliculas.Controllers
         private readonly ServiceSingleton serviceSingleton;
         private readonly ILogger<PrimerController> logger;
         private readonly IWebHostEnvironment env;
+        private readonly IMapper mapper;
 
         public PrimerController(ApplicationDbContext dbContext, IService service,
             ServiceTransient serviceTransient, ServiceScoped serviceScoped,
@@ -31,78 +35,77 @@ namespace WebApiPeliculas.Controllers
             this.serviceSingleton = serviceSingleton;
             this.logger = logger;
             this.env = env;
+            this.mapper = mapper;
         }
 
-        [HttpGet("GUID")]
-        [ResponseCache(Duration = 10)]
-        [ServiceFilter(typeof(FiltroDeAccion))]
-        public ActionResult ObtenerGuid()
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<GetPeliculaDTO>>> Get()
         {
-            throw new NotImplementedException();
-            logger.LogInformation("Durante la ejecucion");
-            return Ok(new
-            {
-                AlumnosControllerTransient = serviceTransient.guid,
-                ServiceA_Transient = service.GetTransient(),
-                AlumnosControllerScoped = serviceScoped.guid,
-                ServiceA_Scoped = service.GetScoped(),
-                AlumnosControllerSingleton = serviceSingleton.guid,
-                ServiceA_Singleton = service.GetSingleton()
-            });
+            var alumnos = await dbContext.Peliculas.ToListAsync();
+            return mapper.Map<List<GetPeliculaDTO>>(alumnos);
         }
 
-        [HttpGet("{id}")]
-
-        public async Task<ActionResult<Pelicula>> Get(int id)
+        [HttpGet("{id:int}",Name ="obtenerpelicula")]
+        //[Authorize]
+        public async Task<ActionResult<DescripcionDTOConPeliculas>> Get(int id)
         {
-            var pelicula =  await dbContext.Peliculas.FirstOrDefaultAsync(x => x.Id == id);
+            var pelicula = await dbContext.Peliculas
+                .Include(peliculaDB => peliculaDB.peliculaDescripcions)
+                .ThenInclude(peliculaDescripcionDB => peliculaDescripcionDB.Descripcion)
+                .FirstOrDefaultAsync(peliculaBD => peliculaBD.Id == id);
 
             if (pelicula == null)
             {
                 return NotFound();
             }
 
-            return pelicula;
+            return mapper.Map<DescripcionDTOConPeliculas>(pelicula);
         }
 
         [HttpGet("{nombre}")]
 
-        public async Task<ActionResult<Pelicula>> Get(string nombre)
+        public async Task<ActionResult<List<GetPeliculaDTO>>> Get([FromRoute] string nombre)
         {
-            var pelicula = await dbContext.Peliculas.FirstOrDefaultAsync(x => x.Nombre.Contains(nombre));
+            var peliculas = await dbContext.Peliculas.Where(peliculaBD => peliculaBD.Nombre.Contains(nombre)).ToListAsync();
 
-            if (pelicula == null)
+            return mapper.Map<List<GetPeliculaDTO>>(peliculas);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Post([FromBody] PeliculaDTO peliculaDto)
+        {
+            var existePeliculaMismoNombre = await dbContext.Peliculas.AnyAsync(x => x.Nombre == peliculaDto.Nombre);
+
+            if (existePeliculaMismoNombre)
+            {
+                return BadRequest("Ya existe una pelicula con el nombre {peliculaDto.Nombre}");
+            }
+            var pelicula = mapper.Map<Pelicula>(peliculaDto);
+
+            dbContext.Add(pelicula);
+            await dbContext.SaveChangesAsync();
+
+            var alumnoDTO = mapper.Map<GetPeliculaDTO>(pelicula);
+
+            return CreatedAtRoute("obtenerpelicula", new { id = pelicula.Id }, alumnoDTO);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult>Put(PeliculaDTO peliculaCreacionDTO, int id)
+        {
+            var exist = await dbContext.Peliculas.AnyAsync(x => x.Id == id);
+            if (!exist)
             {
                 return NotFound();
             }
 
-            return pelicula;
-        }
+            var pelicula = mapper.Map<Pelicula>(peliculaCreacionDTO);
+            pelicula.Id = id;
 
-        [HttpPost]
-        public async Task<ActionResult> Post(Pelicula pelicula)
-        {
-            var existeAlumnoMismoNombre = await dbContext.Peliculas.AnyAsync(x => x.Nombre == pelicula.Nombre);
-
-            if (existeAlumnoMismoNombre)
-            {
-                return BadRequest("Ya existe una pelicula con ese nombre");
-            }
-            dbContext.Add(pelicula);
-            await dbContext.SaveChangesAsync();
-            return Ok();
-        }
-
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult>Put(Pelicula pelicula, int id)
-        {
-            if(pelicula.Id != id)
-            {
-                return BadRequest("El id del alumno no coincide");
-            }
             dbContext.Update(pelicula);
             await dbContext.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
@@ -111,8 +114,9 @@ namespace WebApiPeliculas.Controllers
             var exist = await dbContext.Peliculas.AnyAsync(x => x.Id == id);
             if (!exist)
             {
-                return NotFound();
+                return NotFound("El Recurso no fue encontrado.");
             }
+
             dbContext.Remove(new Pelicula()
             {
                 Id = id

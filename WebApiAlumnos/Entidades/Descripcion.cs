@@ -24,24 +24,6 @@ namespace WebApiPeliculas.Entidades
         [NotMapped]
         public Pelicula Pelicula { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (!string.IsNullOrEmpty(Genero))
-            {
-                var primeraLetra = Genero[0].ToString();
-
-                if (primeraLetra != primeraLetra.ToUpper())
-                {
-                    yield return new ValidationResult("La primera letra debe ser mayuscula",
-                        new String[] { nameof(Genero) });
-                }
-            }
-            var yearcap = 2022;
-            if (year > yearcap)
-            {
-                yield return new ValidationResult("Este valor no puede ser mas grande que el año 2022",
-                    new String[] { nameof(year) });
-            }
-        }
+        public List<PeliculaDescripcion> peliculaDescripcions { get; set; }
     }
 }

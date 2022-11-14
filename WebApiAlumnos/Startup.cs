@@ -30,20 +30,14 @@ namespace WebApiPeliculas
             // Se encarga de configurar ApplicationDbContext como un servicio
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
-
             //Transient da nueva instancia de la clase declarada,
             //sirve para funciones que ejecutan una funcionalidad y listo, sin tener
             //que mantener información que será reutilizada en otros lugares
-            services.AddTransient<IService, ServiceA>();
-            //services.AddTransient<ServiceA>();
+            services.AddTransient<IService, ServiceA>();           
             services.AddTransient<ServiceTransient>();
-            //Scoped el tiempo de vida de la clase declarada aumenta, sin embargo, Scoped da diferentes instancia
-            //de acuerdo a cada quien mande la solicitud es decir Gustavo tiene su intancia y Alumno otra
-            //services.AddScoped<IService, ServiceA>();
+            //Scoped el tiempo de vida de la clase declarada aumenta, sin embargo, Scoped da diferentes instancia                   
             services.AddScoped<ServiceScoped>();
             //Singleton se tiene la misma instancia siempre para todos los usuarios en todos los días,
-            //todos los usuarios que hagan una petición van a tener la misma info compartida entre todos 
-            //services.AddSingleton<IService, ServiceA>();
             services.AddSingleton<ServiceSingleton>();
             services.AddTransient<FiltroDeAccion>();
             services.AddHostedService<EscribirEnArchivo>();
@@ -52,9 +46,13 @@ namespace WebApiPeliculas
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIAlumnos", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiPeliculas", Version = "v1" });
             });
-    }
+
+            services.AddAutoMapper(typeof(Startup));
+        }
+
+        
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {

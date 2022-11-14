@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 namespace WebApiPeliculas.Filtros
 {
-    public class FiltroDeAccion
+    public class FiltroDeAccion : IActionFilter
     {
         private readonly ILogger<FiltroDeAccion> log;
 
